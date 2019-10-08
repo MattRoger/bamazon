@@ -40,22 +40,22 @@ function ask() {
     }
 const query="SELECT * FROM products"    
 function showAll() {
-    console.log("working")
     connection.query(query, function (err, items) {
         if (err) throw err;
         console.log("Available for Purchase")
         for (var i = 0; i < items.length; i++) {
+            
             const productId = items[i].id;
             const name = items[i].product_name;
             const dep = items[i].department;
             const price = "$" + items[i].price;
-            const quantity = items[i].quantity;
+            quantity = items[i].quantity;
             console.log(
                 `Product ID ${productId} ||${name}....${price}  ||${quantity}`
-            )
-            
-        }
-        purchase()
+                )
+                
+            }
+            purchase()
         
     });
 
@@ -75,19 +75,30 @@ function purchase() {
             message:"How many? "
         }
     ]).then(function(buy){
-        const buyID=buy.purchaseId;
-        const productId=buyID;      
-        const total=buy.quant;
-        connection.query(query, function (err, items){
+        // quantity = items[buyID-1].quantity;
+        const buyID=buy.purchaseId;          
+        const total=buy.quant;   
+        
+        if(quantity>total){            
             
-            name = items[buyID-1].product_name;
-            console.log("thank you")
-            console.log(`You wish to purchase ${total} ${name} ${productId} `)
+            
 
-            exit()
-        })
-    })
-}
+            
+            console.log("working")
+             const  newQuantity=quantity-total 
+             var name = items[buyID-1].product_name;
+             console.log(newQuantity)            
+            console.log("thank you")
+                console.log(`You wish to purchase ${total} ${name}`)   
+            
+            }else{
+                console.log("Sorry We do not have that many")
+                purchase()
+            }
+        }
+      
+    )}
+
 
 function exit() {
     connection.end()
