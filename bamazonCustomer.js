@@ -9,7 +9,6 @@ const connection = mysql.createConnection({
 });
 
 
-
 connection.connect(function (err) {
     if (err) throw err;
     console.log(`connected to ${connection.threadId}`)
@@ -35,28 +34,26 @@ function ask() {
                 console.log("Thank you come again")
                 exit()
                 break;
-            }
-        })
-    }
-const query="SELECT * FROM products"    
+        }
+    })
+}
+const query = "SELECT * FROM products"
 function showAll() {
+    console.log("working")
     connection.query(query, function (err, items) {
         if (err) throw err;
         console.log("Available for Purchase")
         for (var i = 0; i < items.length; i++) {
-            
             const productId = items[i].id;
             const name = items[i].product_name;
             const dep = items[i].department;
             const price = "$" + items[i].price;
-            quantity = items[i].quantity;
+            const quantity = items[i].quantity;
             console.log(
-                `Product ID ${productId} ||${name}....${price}  ||${quantity}`
-                )
-                
-            }
-            purchase()
-        
+                `Product ID ${productId} ||${name}....${price}  ||${quantity}`)
+        }
+        purchase()
+
     });
 
 }
@@ -65,42 +62,62 @@ function purchase() {
     console.log("what would you like to buy?")
     inquirer.prompt([
         {
-            type:"integer",
-            name:"purchaseId",
-            message:"Please enter Product ID# "
+            type: "integer",
+            name: "purchaseId",
+            message: "Please enter Product ID# "
         },
         {
-            type:"integer",
-            name:"quant",
-            message:"How many? "
+            type: "integer",
+            name: "quant",
+            message: "How many? "
         }
-    ]).then(function(buy){
-        // quantity = items[buyID-1].quantity;
-        const buyID=buy.purchaseId;          
-        const total=buy.quant;   
+    ]).then(function (buy) {
+        const buyID = buy.purchaseId;
+        const productId = buyID;
+        total = buy.quant;
         
-        if(quantity>total){            
-            
-            
-
-            
-            console.log("working")
-             const  newQuantity=quantity-total 
-             var name = items[buyID-1].product_name;
-             console.log(newQuantity)            
+        connection.query(query, function (err, items) {
+            const orgQuantity = items[buyID - 1].quantity;
+           newQuantity = orgQuantity - total;
+            name = items[buyID - 1].product_name;
             console.log("thank you")
-                console.log(`You wish to purchase ${total} ${name}`)   
-            
-            }else{
-                console.log("Sorry We do not have that many")
-                purchase()
-            }
-        }
-      
-    )}
+            console.log(`You wish to purchase ${total} ${name} ${productId} `)
+            console.log(newQuantity + "now in stock")
+            updateQuantity()
+        })
+    })
+    // exit()
+}
 
+function updateQuantity() {
+    connection.query(query, function (err, items) {
+
+        console.log(newQuantity+"XXXX")
+        // name = items[1].product_name;
+        // orgQuantity = items[1].quantity;
+       
+      
+    })
+
+    console.log("They purchased "+ name)
+    console.log("did i work?")
+    connection.query(
+        "UPDATE products SET ? WHERE ?",       
+        [
+        {
+            quantity:newQuantity
+        },
+        {
+            product_name: name
+        }
+    ], function (err, res) {
+        if (err) throw err;
+        console.log(res.affectedRows + " products updated!\n");
+        console.log(`There are now ${newQuantity} of ${name}`)
+    })
+}
 
 function exit() {
     connection.end()
 
-}
+} 
