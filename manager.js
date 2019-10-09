@@ -2,6 +2,7 @@ const mysql = require("mysql");
 const inquirer = require("inquirer")
 const lowInv=[];
 const listItems=[]
+const order=[]
 const connection = mysql.createConnection({
     host: "localhost",
     port: "3306",
@@ -63,14 +64,13 @@ function lowInventory() {
             const quantity = items[i].quantity;
             const low = items[i].order_more;    
              if (quantity <= low) {
-                let lowItem=` id ${productId} ${name}...${quantity}`                
+                let lowItem=` ${productId}|| ${name}...${quantity}`                
                 lowInv.push(lowItem)
                 console.log(`${quantity}....${name} ||Product ID ${productId}`)
             }
         }
 
-            console.log("products low " + lowInv)
-            inquirer.prompt([
+                inquirer.prompt([
                    {
                         type: "list",
                         name: "additem",
@@ -93,23 +93,28 @@ function lowInventory() {
 
 function orderMore() {
     console.log("order more working")
-    console.log("products low" +lowInv[0])
+    // console.log("products low" +lowInv[0])
     lowInv.forEach(list)
-    function list(item, index){
-     listItems.push('"'+item + " "+ index+'"'+",");
+    function list(item){
+     listItems.push(item);
     }
     console.log(listItems)
-    console.log("here we are")
-   
     inquirer.prompt([
         {
-             type: "checkbox",
-             name: "addItem",
-             message: "What would you like to order more of?",
-             choices: listItems
-         }
-     ]).then(function(selection){
-console.log(selection.addITem)
+            type: "checkbox",
+            name: "addItem",
+            message: "What would you like to order more of?",
+            choices: listItems
+        }
+    ]).then(function(selection){
+        console.log("here we are")
+        var orderItem=selection.addItem
+        orderItem.forEach(list)
+        function list(item){
+            order.push(item)
+        }
+        console.log(order)
+
      })
 
     
