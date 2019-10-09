@@ -7,20 +7,19 @@ const connection = mysql.createConnection({
     password: "matrix",
     database: "bamazon_db"
 });
-
-
 connection.connect(function (err) {
     if (err) throw err;
     console.log(`connected to ${connection.threadId}`)
     ask()
 });
+
 function ask() {
     inquirer.prompt([
         {
             type: "list",
             name: "searchtype",
             message: "Search by: ",
-            choices: ["all", "department", "exit"]
+            choices: ["all","department","exit"]
         }
     ]).then(function (answer) {
         switch (answer.searchtype) {
@@ -39,7 +38,7 @@ function ask() {
 }
 const query = "SELECT * FROM products"
 function showAll() {
-    console.log("working")
+
     connection.query(query, function (err, items) {
         if (err) throw err;
         console.log("Available for Purchase")
@@ -49,13 +48,10 @@ function showAll() {
             const dep = items[i].department;
             const price = "$" + items[i].price;
             const quantity = items[i].quantity;
-            console.log(
-                `Product ID ${productId} ||${name}....${price}  ||${quantity}`)
+            console.log(`Product ID ${productId} ||${name}....${price}  ||${quantity}`)
         }
         purchase()
-
     });
-
 }
 
 function purchase() {
@@ -74,8 +70,7 @@ function purchase() {
     ]).then(function (buy) {
         const buyID = buy.purchaseId;
         const productId = buyID;
-        total = buy.quant;
-        
+        total = buy.quant;        
         connection.query(query, function (err, items) {
             const orgQuantity = items[buyID - 1].quantity;
            newQuantity = orgQuantity - total;
@@ -84,23 +79,14 @@ function purchase() {
             console.log(`You wish to purchase ${total} ${name} ${productId} `)
             console.log(newQuantity + "now in stock")
             updateQuantity()
+            addAnother()
         })
-    })
-    // exit()
+    })   
 }
-
 function updateQuantity() {
     connection.query(query, function (err, items) {
-
-        console.log(newQuantity+"XXXX")
-        // name = items[1].product_name;
-        // orgQuantity = items[1].quantity;
-       
-      
     })
-
     console.log("They purchased "+ name)
-    console.log("did i work?")
     connection.query(
         "UPDATE products SET ? WHERE ?",       
         [
@@ -116,8 +102,10 @@ function updateQuantity() {
         console.log(`There are now ${newQuantity} of ${name}`)
     })
 }
-
+ function addAnother(){
+     console.log("Would you like to purchase anything else?")
+     ask();
+ }
 function exit() {
     connection.end()
-
 } 
