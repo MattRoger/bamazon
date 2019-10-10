@@ -73,7 +73,7 @@ function purchase() {
         total = buy.quant;        
         connection.query(query, function (err, items) {
             const orgQuantity = items[buyID - 1].quantity;
-           newQuantity = orgQuantity - total;
+            newQuantity = orgQuantity - total;
             name = items[buyID - 1].product_name;
             console.log("thank you")
             console.log(`You wish to purchase ${total} ${name} ${productId} `)
