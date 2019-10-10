@@ -5,13 +5,14 @@ const lowInvId = []
 const listItems = []
 let order = []
 let idName = []
-var stockLevel = []
+// var stockLevel = []
 
-function Inventory(id, name, price, quantity) {
+function Inventory(id, name, price, quantity, StockLevel) {
     this.id = id,
         this.name = name,
         this.price = price,
         this.quantity = quantity;
+        this.StockLevel=StockLevel
 }
 
 
@@ -77,7 +78,7 @@ function lowInventory() {
             const quantity = items[i].quantity;
             const low = items[i].order_more;
             if (quantity <= low) {
-                inventory1 = new Inventory(productId, name, quantity)
+                
                 let lowItem = `${name}`
                 lowInv.push(lowItem)
                 let lowItemId = productId;
@@ -96,7 +97,7 @@ function lowInventory() {
         ]).then(function (answer) {
             switch (answer.additem) {
                 case "order more":
-                    restock()
+                    orderMore()
                     break;
                 case "exit":
                     console.log("Thank you come again")
@@ -117,7 +118,7 @@ function restock() {
             productId = items[i].id;
             order.push(name)
             const quantity = items[i].quantity;
-            const stockLevel = items[i].stock_level;
+            
         }
         console.log(order)
         inquirer.prompt([
@@ -158,79 +159,60 @@ function restock() {
 
 
 
-// function orderMore() {
-//     // console.log("products low" +lowInv[0])
-//     lowInv.forEach(list)
-//     function list(item) {
-//         listItems.push(item);
-//     }
-//     console.log(listItems)
-//     inquirer.prompt([
-//         {
-//             type: "checkbox",
-//             name: "addItem",
-//             message: "What would you like to order more of?",
-//             choices: listItems
-//         }
-//     ]).then(function (selection) {
-//         orderItem = selection.addItem
-//         console.log("orderItem" + orderItem)
-//         order = orderItem.splice(",")
-//         connection.query(query, function (err, items){
-//             if (err) throw err;
-//             x=order.length-1
-//             for (var i = 0; i < items.length; i++) {
-//               const sl = items[i].stock_level;
-//               stockLevel.push(sl)
-//                nid = items[i].product_name;
-//               idName.push(nid)
-//               if(order[x]==idName[i]){
+function orderMore() {
+    // console.log("products low" +lowInv[0])
+    lowInv.forEach(list)
+    function list(item) {
+        listItems.push(item);
+    }
+    console.log(listItems)
+    inquirer.prompt([
+        {
+            type: "list",
+            name: "addItem",
+            message: "What would you like to order more of?",
+            choices: listItems
+        }
+    ]).then(function (selection) {
+        orderItem = selection.addItem
+        console.log("orderItem" + orderItem)     
+        connection.query(query, function (err, items){
+            console.log("here we are")
+            if (err) throw err;           
+            for (var i = 0; i < items.length; i++) {
+                 name = items[i].product_name;
+                 stockLevel = items[i].stock_level;
+                 if(orderItem===name){
+                    inventory1 = new Inventory( name, stockLevel)
+                    restockAmount=inventory1.name
+                    addInv()
+                 }
+                }
+         })
 
-//                   z= idName.indexOf(idName[i])
-//                   console.log(z + "ZZZZ")
-//                   console.log("hit" + order[x] + idName[i]);
-//                     addInv()
-//                 }
-//             } 
-//             x=-1
+    })
 
+}
 
-//             console.log("here we are")
-//             console.log(x)
-//             console.log(order[x-1])
-//             console.log(stockLevel)
-//             console.log(idName)
-//                 // console.log(stock)
+function addInv(){
+    console.log("addinv working")
+    
+        console.log(restockAmount)
+        console.log("orderItem")
+        console.log("working")
+        connection.query(
+            "UPDATE products SET ? WHERE ?",
+            [
+                {
+                    quantity:restockAmount
+                },
+                {
+                    product_name: orderItem
+                }
+            ], function (err, res) {
+                if (err) throw err;
+                console.log(res.affectedRows + " products updated!\n");
+                console.log(`There are now ${restockAmount} of ${orderItem}`)
 
-
-//         })
-
-
-
-//     })
-
-// }
-
-// function addInv(){
-//     console.log("addinv working")
-//     for (i = 0; i < order.length; i++) {
-//         console.log("working")
-
-//         connection.query(
-//             "UPDATE products SET ? WHERE ?",
-//             [
-//                 {
-//                     product_name: order[i]
-//                 },
-//                 {
-//                     quantity:stockLevel[z]
-//                 }
-//             ], function (err, res) {
-//                 if (err) throw err;
-//                 console.log(res.affectedRows + " products updated!\n");
-//                 console.log(`There are now ${stockLevel[z]} of ${order[x]}`)
-
-//             })
-
-//     }
-// }
+            })    
+}
