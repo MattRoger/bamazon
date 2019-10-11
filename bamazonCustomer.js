@@ -22,6 +22,7 @@ function ask() {
             choices: ["all","department","exit"]
         }
     ]).then(function (answer) {
+        
         switch (answer.searchtype) {
             case "all":
                 console.log(answer)
