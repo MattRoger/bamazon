@@ -28,7 +28,7 @@ function backend() {
             type: "list",
             name: "searchtype",
             message: "What Would You Like To Do ",
-            choices: ["inventory", "low inventory", "add stock", "remove product", "exit"]
+            choices: ["inventory", "low inventory", "add stock", "remove product","add product", "exit"]
         }
     ]).then(function (answer) {
         switch (answer.searchtype) {
@@ -43,6 +43,9 @@ function backend() {
                 break;
             case "remove product":
                 remove()
+                break;
+            case "add product":
+                addItem()
                 break;
             case "exit":
                 console.log("Thank you come again")
@@ -169,14 +172,12 @@ function addInventory() {
             }
             amount = items[x].quantity;
             restockAmount = restockAmount + amount
-
             if (selectedInv === "menu") {
                 backend()
             } else {
                 add();
             }
         })
-
     })
 }
 function add() {
@@ -195,9 +196,6 @@ function add() {
             console.log(`There are now ${restockAmount} of ${selectedInv}`)
             next();
         });
-
-
-
 }
 function next() {
     inquirer.prompt([
@@ -213,7 +211,7 @@ function next() {
                 inventory()
                 break;
             case "main menu":
-                lowInventory()
+                backend()
                 break;
 
             case "exit":
@@ -223,7 +221,6 @@ function next() {
         }
     })
 }
-
 function addInv() {
     connection.query(
         "UPDATE products SET ? WHERE ?",
@@ -241,12 +238,9 @@ function addInv() {
 
         })
 }
-
-
 function exit() {
     connection.end()
 }
-
 function remove() {
     connection.query(query, function (err, items) {
         if (err) throw err;
@@ -281,13 +275,103 @@ function remove() {
                             if (err) throw err;
                             console.log(res.affectedRows + " products updated!\n");
                             console.log(`${deleteItem} has be removed`)
-                
                         }
                     )
+                }else{
+                    removeAgain()
                 }
             })
         }
 
-
     })
 }
+
+function removeAgain(){
+    InputDeviceInfo.prompt([
+        {
+            type: "list",
+            name: "removeNext",
+            message: "remove an item or main menu",
+            choices: ["remove item","main menu"]
+        }
+    ]).then(function (answer) {
+        switch (answer.removeNext) {
+            case "add more stock":
+                remove()
+                break;
+            case "main menu":
+                backend()
+                break;
+
+            case "exit":
+                console.log("Thank you come again")
+                exit()
+                break;
+        }
+    })
+}
+function addItem(){
+   inquirer.prompt([
+        {
+            name:"newItemName",
+            message:"product name"
+        },
+        {
+            name:"department",
+            message:"department"
+        },
+        {
+            type:"number",
+            name:"price",
+            message:"Price"
+        },
+        {
+            type:"number",
+            name:"quantity",
+            message:"starting quantity"
+        },
+        {
+            type:"number",
+            name:"restockPoint",
+            message:"restock point?"
+        },
+        {
+            type:"number",
+            name:"stockLevel",
+            message:"stock refill level?"
+        }
+    ]).then(function(input){
+        const name=input.newItemName;
+        const department=input.department;
+        const price=input.price;
+        const quantity=input.quantity;
+        const restockPoint=input.restockPoint;
+        const stockLevel=input.stockLevel;
+        insert="INSERT INTO products (product_name,department,price,quantity,order_more,stock_level) VALUES ?"
+        values=[name,department,price,quantity,restockPoint,stockLevel]
+        console.log(values)
+        connection.query(insert[values],function (err, res) {
+                console.log("hi")    
+                if (err) throw err;
+                console.log(res.affectedRows + " products updated!\n");
+                console.log(`${name} added ${quantity} sell for ${price} order more at ${restockPoint}`)
+                inquirer.prompt([
+                    {
+                        type: "list",
+                        name: "addNext",
+                        message: "add an item or main menu",
+                        choices: ["add item","main menu"]
+                    }
+                ]).then(function(answer){
+                    if(answer.addNext==="add item"){
+                        addItem()
+                    }else{
+                        backend()
+                    }
+                })
+            })
+        })
+        
+    }
+
+        
